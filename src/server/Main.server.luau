@@ -6,7 +6,14 @@ local DataStoreService = game:GetService("DataStoreService")
 local Lighting = game:GetService("Lighting")
 
 local Config = require(ReplicatedStorage.Shared.Config)
-local store = DataStoreService:GetDataStore("LoadenCityTycoonV2")
+-- In een niet-gepubliceerde place geeft GetDataStore een fout; dan spelen we zonder opslaan.
+local storeOk, store = pcall(function()
+	return DataStoreService:GetDataStore("LoadenCityTycoonV2")
+end)
+if not storeOk then
+	store = nil
+	warn("Opslaan staat uit (publiceer de place en zet API-toegang aan om op te slaan)")
+end
 
 -- Remotes -------------------------------------------------------------------
 local remotes = Instance.new("Folder")
@@ -401,7 +408,7 @@ end
 -- Opslaan -----------------------------------------------------------------------
 local function save(player: Player)
 	local s = states[player]
-	if not s or not s.loaded then
+	if not s or not s.loaded or not store then
 		return
 	end
 	local parcelList = {}
@@ -453,9 +460,12 @@ local function setup(player: Player)
 	states[player] = s
 
 	-- Opgeslagen voortgang laden
-	local ok, data = pcall(function()
-		return store:GetAsync(tostring(player.UserId))
-	end)
+	local ok, data = false, nil
+	if store then
+		ok, data = pcall(function()
+			return store:GetAsync(tostring(player.UserId))
+		end)
+	end
 	if ok and typeof(data) == "table" then
 		s.coins = tonumber(data.coins) or s.coins
 		for _, p in data.parcels or {} do

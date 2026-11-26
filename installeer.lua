@@ -200,7 +200,6 @@ function Config.SnapCell(def, x: number, z: number): (number, number)
 end
 
 return Config
-
 ]==])
 
 put("Script", "Main", SSS, [==[
@@ -212,7 +211,14 @@ local DataStoreService = game:GetService("DataStoreService")
 local Lighting = game:GetService("Lighting")
 
 local Config = require(ReplicatedStorage.Shared.Config)
-local store = DataStoreService:GetDataStore("LoadenCityTycoonV2")
+-- In een niet-gepubliceerde place geeft GetDataStore een fout; dan spelen we zonder opslaan.
+local storeOk, store = pcall(function()
+	return DataStoreService:GetDataStore("LoadenCityTycoonV2")
+end)
+if not storeOk then
+	store = nil
+	warn("Opslaan staat uit (publiceer de place en zet API-toegang aan om op te slaan)")
+end
 
 -- Remotes -------------------------------------------------------------------
 local remotes = Instance.new("Folder")
@@ -607,7 +613,7 @@ end
 -- Opslaan -----------------------------------------------------------------------
 local function save(player: Player)
 	local s = states[player]
-	if not s or not s.loaded then
+	if not s or not s.loaded or not store then
 		return
 	end
 	local parcelList = {}
@@ -659,9 +665,12 @@ local function setup(player: Player)
 	states[player] = s
 
 	-- Opgeslagen voortgang laden
-	local ok, data = pcall(function()
-		return store:GetAsync(tostring(player.UserId))
-	end)
+	local ok, data = false, nil
+	if store then
+		ok, data = pcall(function()
+			return store:GetAsync(tostring(player.UserId))
+		end)
+	end
 	if ok and typeof(data) == "table" then
 		s.coins = tonumber(data.coins) or s.coins
 		for _, p in data.parcels or {} do
@@ -860,7 +869,6 @@ task.spawn(function()
 		end
 	end
 end)
-
 ]==])
 
 put("LocalScript", "Client", SPS, [==[
@@ -1154,7 +1162,7 @@ for i, name in Config.Categories do
 end
 showCategory(1)
 
-remotes.State.OnClientEvent:Connect(function(newState)
+remotes:WaitForChild("State").OnClientEvent:Connect(function(newState)
 	state = newState
 	refreshUI()
 end)
@@ -1222,18 +1230,17 @@ UserInputService.InputBegan:Connect(function(input, processed)
 		local p = mouse.Hit.Position
 		local ok, msg
 		if mode == "land" then
-			ok, msg = remotes.Buy:InvokeServer(Config.SnapParcel(p.X), Config.SnapParcel(p.Z))
+			ok, msg = remotes:WaitForChild("Buy"):InvokeServer(Config.SnapParcel(p.X), Config.SnapParcel(p.Z))
 		elseif mode == "build" and selected then
-			ok, msg = remotes.Place:InvokeServer(selected.id, p)
+			ok, msg = remotes:WaitForChild("Place"):InvokeServer(selected.id, p)
 		elseif mode == "demolish" then
-			ok, msg = remotes.Demolish:InvokeServer(p)
+			ok, msg = remotes:WaitForChild("Demolish"):InvokeServer(p)
 		end
 		if msg then
 			showToast(msg, ok)
 		end
 	end
 end)
-
 ]==])
 
 local base = workspace:FindFirstChild("Baseplate")

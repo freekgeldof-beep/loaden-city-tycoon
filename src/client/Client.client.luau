@@ -288,7 +288,7 @@ for i, name in Config.Categories do
 end
 showCategory(1)
 
-remotes.State.OnClientEvent:Connect(function(newState)
+remotes:WaitForChild("State").OnClientEvent:Connect(function(newState)
 	state = newState
 	refreshUI()
 end)
@@ -356,11 +356,11 @@ UserInputService.InputBegan:Connect(function(input, processed)
 		local p = mouse.Hit.Position
 		local ok, msg
 		if mode == "land" then
-			ok, msg = remotes.Buy:InvokeServer(Config.SnapParcel(p.X), Config.SnapParcel(p.Z))
+			ok, msg = remotes:WaitForChild("Buy"):InvokeServer(Config.SnapParcel(p.X), Config.SnapParcel(p.Z))
 		elseif mode == "build" and selected then
-			ok, msg = remotes.Place:InvokeServer(selected.id, p)
+			ok, msg = remotes:WaitForChild("Place"):InvokeServer(selected.id, p)
 		elseif mode == "demolish" then
-			ok, msg = remotes.Demolish:InvokeServer(p)
+			ok, msg = remotes:WaitForChild("Demolish"):InvokeServer(p)
 		end
 		if msg then
 			showToast(msg, ok)
