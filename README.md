@@ -13,15 +13,22 @@ Begin met een klein perceel en bouw het uit tot een metropool.
 - Met "Land vergroten" maak je je perceel groter (tot 30x30 vakjes).
 - Voortgang wordt automatisch opgeslagen (DataStore).
 
-## Starten
+## Starten (makkelijkste manier, zonder Rojo)
 
-1. Installeer [Rojo](https://rojo.space) (VS Code-extensie of CLI) en Roblox Studio.
-2. Maak in Studio een lege Baseplate-place. Verwijder de standaard Baseplate; het script maakt zelf grond.
-3. Voer in deze map `rojo serve` uit en klik in Studio op Connect in de Rojo-plugin.
-4. Druk op Play.
+1. Open Roblox Studio en maak een nieuwe **Baseplate**-place.
+2. Open het bestand `installeer.lua` op GitHub, klik op "Raw" en kopieer alles (Ctrl+A, Ctrl+C).
+3. Zet in Studio de Command Bar aan: tabblad **View** > **Command Bar**.
+4. Plak de tekst in de Command Bar en druk op **Enter**.
+5. Druk op **Play**.
 
-Voor DataStore-opslag in Studio: Game Settings → Security → "Enable Studio Access to API Services".
+Na elke update van de code plak je `installeer.lua` opnieuw; de oude scripts worden vervangen.
+
+Opslaan van voortgang: Game Settings > Security > "Enable Studio Access to API Services".
 Zonder die instelling werkt het spel nog steeds, maar zonder opslaan.
+
+## Starten met Rojo (voor gevorderden)
+
+Voer in deze map `rojo serve` uit en klik in Studio op Connect in de Rojo-plugin.
 
 ## Structuur
 

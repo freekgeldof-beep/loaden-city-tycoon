@@ -30,10 +30,34 @@ ground.Name = "Ground"
 ground.Anchored = true
 ground.Size = Vector3.new(12000, 2, 2000)
 ground.Position = Vector3.new(5000, -1, 0)
-ground.Color = Color3.fromRGB(96, 140, 80)
+ground.Color = Color3.fromRGB(120, 190, 85)
 ground.Material = Enum.Material.Grass
 ground.TopSurface = Enum.SurfaceType.Smooth
 ground.Parent = workspace
+
+-- Sfeer: zonnige blauwe lucht met witte wolkjes
+local Lighting = game:GetService("Lighting")
+Lighting.ClockTime = 14
+Lighting.Brightness = 3
+Lighting.OutdoorAmbient = Color3.fromRGB(170, 170, 190)
+local atmosphere = Instance.new("Atmosphere")
+atmosphere.Density = 0.15
+atmosphere.Color = Color3.fromRGB(150, 200, 255)
+atmosphere.Parent = Lighting
+local clouds = Instance.new("Clouds")
+clouds.Cover = 0.55
+clouds.Density = 0.35
+clouds.Parent = workspace.Terrain
+
+-- Iedereen is geel
+local YELLOW = Color3.fromRGB(255, 217, 15)
+local function yellowify(char: Model)
+	local bc = char:FindFirstChildOfClass("BodyColors") or Instance.new("BodyColors")
+	bc.HeadColor3, bc.TorsoColor3 = YELLOW, YELLOW
+	bc.LeftArmColor3, bc.RightArmColor3 = YELLOW, YELLOW
+	bc.LeftLegColor3, bc.RightLegColor3 = YELLOW, YELLOW
+	bc.Parent = char
+end
 
 -- Spelerstatus ---------------------------------------------------------------
 type State = {
@@ -89,18 +113,58 @@ local function footprintFree(s: State, def, gx: number, gz: number): boolean
 	return true
 end
 
+local function newPart(s: State, name: string, size: Vector3, pos: Vector3, color: Color3, material: Enum.Material?): Part
+	local part = Instance.new("Part")
+	part.Name = name
+	part.Anchored = true
+	part.Size = size
+	part.Position = pos
+	part.Color = color
+	part.Material = material or Enum.Material.SmoothPlastic
+	part.TopSurface = Enum.SurfaceType.Smooth
+	part.BottomSurface = Enum.SurfaceType.Smooth
+	part.Parent = s.folder
+	return part
+end
+
 local function buildModel(s: State, def, gx: number, gz: number)
 	local cs = Config.CellSize
-	local w, d = def.cells[1] * cs - 0.6, def.cells[2] * cs - 0.6
-	local part = Instance.new("Part")
-	part.Name = def.id
-	part.Anchored = true
-	part.Size = Vector3.new(w, def.height, d)
-	part.Color = def.color
-	part.Material = def.id == "Park" and Enum.Material.Grass or Enum.Material.SmoothPlastic
-	part.Position = s.origin
-		+ Vector3.new((gx + def.cells[1] / 2) * cs, def.height / 2 + 0.2, (gz + def.cells[2] / 2) * cs)
-	part.Parent = s.folder
+	local w, d, h = def.cells[1] * cs - 0.6, def.cells[2] * cs - 0.6, def.height
+	local c = s.origin + Vector3.new((gx + def.cells[1] / 2) * cs, 0.2, (gz + def.cells[2] / 2) * cs)
+	local top = c + Vector3.new(0, h, 0)
+
+	newPart(s, def.id, Vector3.new(w, h, d), c + Vector3.new(0, h / 2, 0), def.color,
+		def.id == "Park" and Enum.Material.Grass or nil)
+
+	if def.roof then
+		newPart(s, "Dak", Vector3.new(w + 1, 0.8, d + 1), top + Vector3.new(0, 0.4, 0), def.roof)
+	end
+
+	-- Raampjes voor hogere gebouwen (voorkant naar -Z)
+	if h >= 20 then
+		for y = 6, h - 6, 8 do
+			for x = -w / 2 + 3, w / 2 - 3, 4 do
+				newPart(s, "Raam", Vector3.new(2, 3, 0.3), c + Vector3.new(x, y, -d / 2 - 0.1),
+					Color3.fromRGB(255, 240, 150), Enum.Material.Neon)
+			end
+		end
+	end
+
+	if def.id == "Factory" then
+		-- Twee koeltorens
+		for _, dx in { -w / 4, w / 4 } do
+			local tower = newPart(s, "Koeltoren", Vector3.new(22, 7, 7), top + Vector3.new(dx, 11.8, 0),
+				Color3.fromRGB(185, 195, 185))
+			tower.Shape = Enum.PartType.Cylinder
+			tower.Orientation = Vector3.new(0, 0, 90)
+		end
+	elseif def.id == "Shop" then
+		-- Reuzendonut op het dak
+		local donut = newPart(s, "Donut", Vector3.new(2, 6, 6), top + Vector3.new(0, 3.5, 0),
+			Color3.fromRGB(235, 150, 190))
+		donut.Shape = Enum.PartType.Cylinder
+		donut.Orientation = Vector3.new(0, 0, 90)
+	end
 end
 
 local function addBuilding(s: State, def, gx: number, gz: number, record: boolean)
@@ -151,7 +215,7 @@ local function setup(player: Player)
 	local plot = Instance.new("Part")
 	plot.Name = "Perceel"
 	plot.Anchored = true
-	plot.Color = Color3.fromRGB(150, 190, 110)
+	plot.Color = Color3.fromRGB(175, 225, 120)
 	plot.Material = Enum.Material.Grass
 	plot.Position = origin + Vector3.new(0, 0.1, 0)
 	plot.Parent = folder
@@ -192,6 +256,10 @@ local function setup(player: Player)
 	local function spawnAt(char: Model)
 		task.wait()
 		char:PivotTo(CFrame.new(origin + Vector3.new(0, 6, s.land / 2 + 8)))
+	end
+	player.CharacterAppearanceLoaded:Connect(yellowify)
+	if player.Character then
+		yellowify(player.Character)
 	end
 	player.CharacterAdded:Connect(spawnAt)
 	if player.Character then

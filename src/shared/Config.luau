@@ -22,13 +22,13 @@ Config.Tiers = {
 -- tier = vanaf welk stadsniveau het gebouw te koop is.
 -- cells = footprint in rastervakjes, height = hoogte in studs.
 Config.Buildings = {
-	{ id = "House", name = "Huisje", cost = 50, income = 1, pop = 4, cells = { 1, 1 }, height = 6, color = Color3.fromRGB(226, 180, 130), tier = 1 },
-	{ id = "Park", name = "Parkje", cost = 80, income = 1, pop = 0, cells = { 2, 2 }, height = 1, color = Color3.fromRGB(90, 170, 80), tier = 1 },
-	{ id = "Shop", name = "Winkel", cost = 250, income = 6, pop = 2, cells = { 1, 1 }, height = 9, color = Color3.fromRGB(235, 120, 90), tier = 2 },
-	{ id = "Apartment", name = "Flat", cost = 900, income = 20, pop = 40, cells = { 2, 2 }, height = 24, color = Color3.fromRGB(170, 170, 190), tier = 3 },
-	{ id = "Factory", name = "Fabriek", cost = 2500, income = 70, pop = 10, cells = { 3, 2 }, height = 14, color = Color3.fromRGB(120, 120, 120), tier = 4 },
-	{ id = "Office", name = "Kantoor", cost = 6000, income = 180, pop = 60, cells = { 2, 2 }, height = 45, color = Color3.fromRGB(100, 150, 200), tier = 4 },
-	{ id = "Skyscraper", name = "Wolkenkrabber", cost = 25000, income = 800, pop = 200, cells = { 2, 2 }, height = 90, color = Color3.fromRGB(70, 110, 170), tier = 5 },
+	{ id = "House", name = "Huisje", cost = 50, income = 1, pop = 4, cells = { 1, 1 }, height = 6, color = Color3.fromRGB(252, 228, 150), roof = Color3.fromRGB(205, 95, 65), tier = 1 },
+	{ id = "Park", name = "Parkje", cost = 80, income = 1, pop = 0, cells = { 2, 2 }, height = 1, color = Color3.fromRGB(110, 200, 90), tier = 1 },
+	{ id = "Shop", name = "Donutwinkel", cost = 250, income = 6, pop = 2, cells = { 1, 1 }, height = 9, color = Color3.fromRGB(255, 150, 190), roof = Color3.fromRGB(255, 235, 200), tier = 2 },
+	{ id = "Apartment", name = "Flat", cost = 900, income = 20, pop = 40, cells = { 2, 2 }, height = 24, color = Color3.fromRGB(214, 160, 110), roof = Color3.fromRGB(120, 120, 130), tier = 3 },
+	{ id = "Factory", name = "Kerncentrale", cost = 2500, income = 70, pop = 10, cells = { 3, 2 }, height = 14, color = Color3.fromRGB(160, 180, 160), roof = Color3.fromRGB(90, 90, 100), tier = 4 },
+	{ id = "Office", name = "Kantoor", cost = 6000, income = 180, pop = 60, cells = { 2, 2 }, height = 45, color = Color3.fromRGB(120, 170, 225), roof = Color3.fromRGB(80, 80, 100), tier = 4 },
+	{ id = "Skyscraper", name = "Wolkenkrabber", cost = 25000, income = 800, pop = 200, cells = { 2, 2 }, height = 90, color = Color3.fromRGB(245, 205, 80), roof = Color3.fromRGB(80, 80, 100), tier = 5 },
 }
 
 Config.ById = {}

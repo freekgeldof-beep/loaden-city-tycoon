@@ -36,8 +36,8 @@ local function label(parent, size, pos, textSize)
 	l.Size = size
 	l.Position = pos
 	l.BackgroundTransparency = 1
-	l.TextColor3 = Color3.new(1, 1, 1)
-	l.Font = Enum.Font.GothamBold
+	l.TextColor3 = Color3.fromRGB(40, 40, 90)
+	l.Font = Enum.Font.FredokaOne
 	l.TextSize = textSize
 	l.TextXAlignment = Enum.TextXAlignment.Left
 	l.Parent = parent
@@ -48,11 +48,14 @@ local function panel(parent, size, pos)
 	local f = Instance.new("Frame")
 	f.Size = size
 	f.Position = pos
-	f.BackgroundColor3 = Color3.fromRGB(25, 30, 40)
-	f.BackgroundTransparency = 0.2
+	f.BackgroundColor3 = Color3.fromRGB(255, 217, 15)
+	f.BackgroundTransparency = 0
 	f.BorderSizePixel = 0
 	f.Parent = parent
-	Instance.new("UICorner", f).CornerRadius = UDim.new(0, 10)
+	Instance.new("UICorner", f).CornerRadius = UDim.new(0, 12)
+	local stroke = Instance.new("UIStroke", f)
+	stroke.Thickness = 3
+	stroke.Color = Color3.fromRGB(40, 40, 90)
 	return f
 end
 
@@ -60,11 +63,12 @@ local top = panel(gui, UDim2.fromOffset(330, 92), UDim2.fromOffset(12, 12))
 local coinsLabel = label(top, UDim2.new(1, -20, 0, 32), UDim2.fromOffset(12, 6), 26)
 local cityLabel = label(top, UDim2.new(1, -20, 0, 22), UDim2.fromOffset(12, 40), 16)
 local incomeLabel = label(top, UDim2.new(1, -20, 0, 22), UDim2.fromOffset(12, 64), 16)
-incomeLabel.TextColor3 = Color3.fromRGB(140, 230, 140)
+incomeLabel.TextColor3 = Color3.fromRGB(30, 120, 50)
 
 local toast = label(gui, UDim2.fromOffset(400, 30), UDim2.new(0.5, -200, 0, 20), 20)
 toast.TextXAlignment = Enum.TextXAlignment.Center
 toast.TextTransparency = 1
+toast.TextStrokeTransparency = 0
 
 local toastToken = 0
 local function showToast(text: string, good: boolean)
@@ -95,7 +99,7 @@ local function makeButton(text: string, color: Color3)
 	b.Size = UDim2.fromOffset(130, 80)
 	b.BackgroundColor3 = color
 	b.TextColor3 = Color3.new(1, 1, 1)
-	b.Font = Enum.Font.GothamBold
+	b.Font = Enum.Font.FredokaOne
 	b.TextSize = 14
 	b.TextWrapped = true
 	b.Text = text
@@ -163,7 +167,7 @@ local function refreshUI()
 		local unlocked = state.tier >= def.tier
 		if unlocked then
 			b.Text = string.format("%s\n💰 %s\n+%s/s", def.name, fmt(def.cost), fmt(def.income))
-			b.BackgroundColor3 = state.coins >= def.cost and Color3.fromRGB(60, 110, 160) or Color3.fromRGB(70, 70, 80)
+			b.BackgroundColor3 = state.coins >= def.cost and Color3.fromRGB(70, 130, 220) or Color3.fromRGB(120, 120, 135)
 		else
 			b.Text = string.format("%s\n🔒 %s", def.name, Config.Tiers[def.tier].name)
 			b.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
