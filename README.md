@@ -4,13 +4,12 @@ Begin met een klein perceel en bouw het uit tot een metropool.
 
 ## Hoe het werkt
 
-- Je start met 100 munten en een perceel van 6x6 vakjes.
-- Kies een gebouw onderin, beweeg de muis over je perceel en klik om te bouwen.
-  `Q` of `X` annuleert.
+- Je start met 100 munten en één stuk land (6x6 vakjes) in een grote open wereld.
+- Kies een gebouw onderin, beweeg de muis over je land en klik om te bouwen. `Q` of `X` annuleert.
 - Elk gebouw levert elke seconde munten op. Huizen en flats brengen inwoners.
-- Met meer inwoners stijgt je stad: Gehucht → Dorp → Stad → Grote stad → Metropool.
-  Elk niveau ontgrendelt nieuwe gebouwen.
-- Met "Land vergroten" maak je je perceel groter (tot 30x30 vakjes).
+- Met meer inwoners stijgt je stad: Gehucht, Dorp, Stad, Grote stad, Metropool. Elk niveau ontgrendelt nieuwe gebouwen (20 soorten, van kiosk tot pretpark).
+- Met "Land kopen" koop je een stuk land naast je eigen stad, in elke richting. Hoe meer land je hebt, hoe duurder het volgende stuk.
+- Je loopt vrij rond in de wereld en ziet de steden van andere spelers.
 - Voortgang wordt automatisch opgeslagen (DataStore).
 
 ## Starten (makkelijkste manier, zonder Rojo)

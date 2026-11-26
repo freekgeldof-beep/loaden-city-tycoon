@@ -13,6 +13,7 @@ local mouse = player:GetMouse()
 
 local state = nil
 local selected = nil
+local landMode = false
 local ghost: Part? = nil
 local buttons = {}
 
@@ -84,7 +85,20 @@ local function showToast(text: string, good: boolean)
 	end)
 end
 
-local bar = panel(gui, UDim2.new(1, -24, 0, 96), UDim2.new(0, 12, 1, -108))
+local bar = Instance.new("ScrollingFrame")
+bar.Size = UDim2.new(1, -24, 0, 104)
+bar.Position = UDim2.new(0, 12, 1, -116)
+bar.BackgroundColor3 = Color3.fromRGB(255, 217, 15)
+bar.BorderSizePixel = 0
+bar.ScrollingDirection = Enum.ScrollingDirection.X
+bar.AutomaticCanvasSize = Enum.AutomaticSize.X
+bar.CanvasSize = UDim2.new()
+bar.ScrollBarThickness = 6
+bar.Parent = gui
+Instance.new("UICorner", bar).CornerRadius = UDim.new(0, 12)
+local barStroke = Instance.new("UIStroke", bar)
+barStroke.Thickness = 3
+barStroke.Color = Color3.fromRGB(40, 40, 90)
 local list = Instance.new("UIListLayout")
 list.FillDirection = Enum.FillDirection.Horizontal
 list.Padding = UDim.new(0, 8)
@@ -116,6 +130,7 @@ local function clearGhost()
 		ghost = nil
 	end
 	selected = nil
+	landMode = false
 	mouse.TargetFilter = nil
 end
 
@@ -149,10 +164,14 @@ for _, def in Config.Buildings do
 	buttons[def.id] = b
 end
 
-local expandButton = makeButton("", Color3.fromRGB(150, 100, 40))
-expandButton.Activated:Connect(function()
-	local ok, msg = remotes.Expand:InvokeServer()
-	showToast(msg, ok)
+local landButton = makeButton("", Color3.fromRGB(150, 100, 40))
+local selectLand -- hieronder gedefinieerd
+landButton.Activated:Connect(function()
+	if landMode then
+		clearGhost()
+	else
+		selectLand()
+	end
 end)
 
 local function refreshUI()
@@ -173,11 +192,7 @@ local function refreshUI()
 			b.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
 		end
 	end
-	if state.expandCost then
-		expandButton.Text = string.format("Land vergroten\n💰 %s", fmt(state.expandCost))
-	else
-		expandButton.Text = "Land is maximaal"
-	end
+	landButton.Text = string.format("Land kopen\n💰 %s\n(%d stukken)", fmt(state.parcelCost), state.parcelCount)
 end
 
 remotes.State.OnClientEvent:Connect(function(newState)
@@ -185,22 +200,69 @@ remotes.State.OnClientEvent:Connect(function(newState)
 	refreshUI()
 end)
 
--- Plaatsen -------------------------------------------------------------------------
-local function snapped(def)
-	local rel = mouse.Hit.Position - state.origin
-	return Config.SnapCell(def, rel.X, rel.Z)
+-- Plaatsen en land kopen -------------------------------------------------------
+local parcels = workspace:WaitForChild("Parcels")
+
+local function parcelPart(px: number, pz: number)
+	return parcels:FindFirstChild(Config.ParcelName(px, pz))
+end
+
+local function owns(px: number, pz: number): boolean
+	local p = parcelPart(px, pz)
+	return p ~= nil and p:GetAttribute("OwnerId") == player.UserId
+end
+
+local function canBuy(px: number, pz: number): boolean
+	if parcelPart(px, pz) then
+		return false
+	end
+	return owns(px + 1, pz) or owns(px - 1, pz) or owns(px, pz + 1) or owns(px, pz - 1)
+end
+
+local function footprintOwned(def, gx: number, gz: number): boolean
+	for x = gx, gx + def.cells[1] - 1 do
+		for z = gz, gz + def.cells[2] - 1 do
+			if not owns(Config.ParcelOfCell(x), Config.ParcelOfCell(z)) then
+				return false
+			end
+		end
+	end
+	return true
+end
+
+function selectLand()
+	clearGhost()
+	landMode = true
+	local g = Instance.new("Part")
+	g.Anchored = true
+	g.CanCollide = false
+	g.CanQuery = false
+	g.Transparency = 0.5
+	g.Material = Enum.Material.Neon
+	g.Size = Vector3.new(Config.ParcelSize, 1, Config.ParcelSize)
+	g.Parent = workspace
+	ghost = g
+	mouse.TargetFilter = g
 end
 
 RunService.RenderStepped:Connect(function()
-	if not (ghost and selected and state) then
+	if not (ghost and state) then
 		return
 	end
-	local def = selected
-	local gx, gz = snapped(def)
-	local cs = Config.CellSize
-	ghost.Position = state.origin + Vector3.new((gx + def.cells[1] / 2) * cs, def.height / 2 + 0.2, (gz + def.cells[2] / 2) * cs)
-	local ok = Config.InBounds(def, gx, gz, state.land) and state.coins >= def.cost
-	ghost.Color = ok and Color3.fromRGB(80, 255, 120) or Color3.fromRGB(255, 80, 80)
+	local p = mouse.Hit.Position
+	if landMode then
+		local px, pz = Config.SnapParcel(p.X), Config.SnapParcel(p.Z)
+		ghost.Position = Vector3.new((px + 0.5) * Config.ParcelSize, 0.8, (pz + 0.5) * Config.ParcelSize)
+		local ok = canBuy(px, pz) and state.coins >= state.parcelCost
+		ghost.Color = ok and Color3.fromRGB(80, 255, 120) or Color3.fromRGB(255, 80, 80)
+	elseif selected then
+		local def = selected
+		local gx, gz = Config.SnapCell(def, p.X, p.Z)
+		local cs = Config.CellSize
+		ghost.Position = Vector3.new((gx + def.cells[1] / 2) * cs, def.height / 2 + 0.2, (gz + def.cells[2] / 2) * cs)
+		local ok = footprintOwned(def, gx, gz) and state.coins >= def.cost
+		ghost.Color = ok and Color3.fromRGB(80, 255, 120) or Color3.fromRGB(255, 80, 80)
+	end
 end)
 
 UserInputService.InputBegan:Connect(function(input, processed)
@@ -209,8 +271,14 @@ UserInputService.InputBegan:Connect(function(input, processed)
 	end
 	if input.KeyCode == Enum.KeyCode.Q or input.KeyCode == Enum.KeyCode.X then
 		clearGhost()
-	elseif input.UserInputType == Enum.UserInputType.MouseButton1 and selected and state then
-		local ok, msg = remotes.Place:InvokeServer(selected.id, mouse.Hit.Position)
-		showToast(msg, ok)
+	elseif input.UserInputType == Enum.UserInputType.MouseButton1 and state then
+		local p = mouse.Hit.Position
+		if landMode then
+			local ok, msg = remotes.Buy:InvokeServer(Config.SnapParcel(p.X), Config.SnapParcel(p.Z))
+			showToast(msg, ok)
+		elseif selected then
+			local ok, msg = remotes.Place:InvokeServer(selected.id, p)
+			showToast(msg, ok)
+		end
 	end
 end)
